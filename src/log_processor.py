@@ -5,12 +5,14 @@ import json
 import hashlib
 import pickle
 
-INPUT_FILE_PATH = "../examples/sample.log"
-CHUNK_SIZE = 1000
-QUEUE_MAX_SIZE = 10
-STATE_FILE = "parser_state.json"
-SEEN_FILE = "seen_lines.pkl"
-POLL_INTERVAL = 0.5
+# Config from .env or defaults
+INPUT_FILE_PATH = os.getenv("INPUT_FILE_PATH", "../examples/sample.log")
+CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
+QUEUE_MAX_SIZE = int(os.getenv("QUEUE_MAX_SIZE", "10"))
+STATE_FILE = os.getenv("STATE_FILE", "../state/parser_state.json")
+SEEN_FILE = os.getenv("SEEN_FILE", "../state/seen_lines.pkl")
+POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "0.5"))
+NUM_PROCESSES = int(os.getenv("NUM_PROCESSES", "3"))
 
 def save_state(position, seen_lines):
     """Persist read position and seen lines safely."""
