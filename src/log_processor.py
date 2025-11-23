@@ -83,6 +83,7 @@ class FileChunkReader:
         self.file_path = file_path
         self.chunk_size = chunk_size
         self.poll_interval = poll_interval
+        self.eof_reached = False
 
     def __iter__(self):
         with open(self.file_path, "r", encoding="utf-8", errors="replace") as f:
@@ -91,6 +92,9 @@ class FileChunkReader:
                 if chunk:
                     yield chunk
                 else:
+                    if not self.eof_reached:
+                        self.eof_reached = True
+                        print("EOF reached. Waiting for user to stop the program (Ctrl+C).")
                     time.sleep(self.poll_interval)
 
     def _read_chunk(self, file_obj):
@@ -107,11 +111,18 @@ class WriterProcess:
         self.last_flush = time.time()
 
     def run(self, queue, stop_flag):
-        while not stop_flag.is_set() or not queue.empty():
-            self._process_queue(queue)
-            if self._should_flush():
-                self.flush()
-        self.flush()
+        try:
+            while not stop_flag.is_set() or not queue.empty():
+                self._process_queue(queue)
+                if self._should_flush():
+                    self.flush()
+        except KeyboardInterrupt:
+            print("Writer received stop signal. Flushing remaining data...")
+        finally:
+            # Ensure remaining queue items are processed before final flush
+            while not queue.empty():
+                self._process_queue(queue)
+            self.flush()
 
     def _process_queue(self, queue):
         try:
@@ -183,8 +194,9 @@ class LogProcessor:
         writer_proc.start()
 
         pool = multiprocessing.Pool(self.num_processes)
+        reader = FileChunkReader(self.input_file)
         try:
-            for chunk in FileChunkReader(self.input_file):
+            for chunk in reader:
                 pool.apply_async(
                     self.parser.parse_lines,
                     args=(chunk,),
@@ -192,6 +204,7 @@ class LogProcessor:
                     error_callback=self._on_error
                 )
         except KeyboardInterrupt:
+            print("User requested stop.")
             self._handle_interrupt(pool)
         finally:
             self._shutdown(pool, writer_proc)
