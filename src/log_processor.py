@@ -108,10 +108,11 @@ class WriterProcess:
         self.flush_interval = flush_interval
         self.aggregated = {}
         self.timeline = []
+        self.msg_store = {}          # maps message string -> ID
+        self.msg_id_counter = 0
         self.last_flush = time.time()
 
     def run(self, queue, stop_flag):
-        # open file inside the process
         os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
         with open(self.output_path, "a", encoding="utf-8") as jsonl_file:
             try:
@@ -130,9 +131,29 @@ class WriterProcess:
         try:
             delta_events, delta_timeline = queue.get(timeout=0.5)
             self._update_aggregated(delta_events)
-            self.timeline.extend(delta_timeline)
+
             for entry in delta_timeline:
+                msg_key = entry.get("msg")
+                if msg_key:
+                    # deduplicate by stripping timestamp & numeric values for template
+                    msg_template = re.sub(r"\b\d+\b", "{num}", msg_key)
+                    msg_template = re.sub(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} ", "", msg_template)
+
+                    msg_id = self.msg_store.get(msg_template)
+                    if msg_id is None:
+                        msg_id = self.msg_id_counter
+                        self.msg_store[msg_template] = msg_id
+                        self.msg_id_counter += 1
+                        # write unique message template
+                        jsonl_file.write(
+                            json.dumps({"id": msg_id, "template": msg_template}, ensure_ascii=False) + "\n")
+
+                    entry["msg_id"] = msg_id
+                    del entry["msg"]
+
+                self.timeline.append(entry)
                 jsonl_file.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
         except Exception:
             pass
 
@@ -149,7 +170,6 @@ class WriterProcess:
         return False
 
     def flush(self):
-        # Only the summary/dashboard is rewritten in JSON
         dashboard = self._build_dashboard()
         dashboard_path = self.output_path + ".summary.json"
         try:
@@ -166,7 +186,7 @@ class WriterProcess:
         }
         metrics = self._compute_metrics()
         summary["metrics"] = metrics
-        return {"summary": summary, "timeline_count": len(self.timeline)}
+        return {"summary": summary, "timeline_count": len(self.timeline), "unique_messages": len(self.msg_store)}
 
     def _compute_metrics(self):
         counts = {}
