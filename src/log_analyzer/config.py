@@ -2,7 +2,7 @@
 import re
 
 # Config
-INPUT_FILE_PATH = os.getenv("INPUT_FILE_PATH", "../../examples/sample.log")
+INPUT_FILE_PATH = os.getenv("INPUT_FILE_PATH", "../../input/sample.log")
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "5000"))
 QUEUE_MAX_SIZE = int(os.getenv("QUEUE_MAX_SIZE", "100"))
 OUTPUT_PATH = os.getenv("OUTPUT_PATH", "../../output/output.json")

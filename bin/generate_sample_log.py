@@ -1,13 +1,13 @@
 ﻿"""
 Generates a sample log file with errors, warnings, info, and latency events.
-Place this in /bin and run to produce /examples/sample.log
+Place this in /bin and run to produce /input/sample.log
 """
 
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
 
-OUTPUT_PATH = Path(__file__).parent.parent / "examples" / "sample.log"
+OUTPUT_PATH = Path(__file__).parent.parent / "input" / "sample.log"
 NUM_LINES = 1_000_000  # number of log entries
 
 ERRORS = [
