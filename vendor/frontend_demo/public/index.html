@@ -59,13 +59,6 @@ body { padding: 20px; background: #f8f9fa; }
 </div>
 
 <script>
-/*
- - Page-based timeline that only requests events (skips template lines).
- - Chart shows last N latency points from /timeseries.
- - Templates are rendered by replacing timestamp-prefix pattern and {num} with ellipsis.
- - NOTE: original numeric values inside template lines are removed by writer, so we cannot
-   reconstruct them. We show templates as human-readable placeholders instead.
-*/
 
 let templates = {};
 let currentPage = 1;

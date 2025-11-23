@@ -20,9 +20,6 @@ def summary():
 
 @app.route('/messages')
 def messages():
-    """
-    Return templates map { id: template } by scanning file once.
-    """
     templates = {}
     if not os.path.exists(OUTPUT_FILE):
         return jsonify(templates)
@@ -38,13 +35,6 @@ def messages():
 
 @app.route('/timeline')
 def timeline_page():
-    """
-    Paginate by *events only* (skip template lines).
-    Query params:
-      - page (1-based, default 1)
-      - per_page (default 30)
-    Returns list of event objects.
-    """
     page = max(1, int(request.args.get('page', 1)))
     per_page = max(1, int(request.args.get('per_page', 30)))
     start_idx = (page - 1) * per_page
@@ -54,7 +44,7 @@ def timeline_page():
         return jsonify([])
 
     result = []
-    seen = 0  # count of non-template events encountered
+    seen = 0
     with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
         for line in f:
             try:
@@ -75,13 +65,6 @@ def timeline_page():
 
 @app.route('/timeseries')
 def timeseries():
-    """
-    Return latest N points for a numeric metric (e.g. metric=latency).
-    Query params:
-      - metric (default: latency)
-      - limit (default: 500)
-    Returns array of {time, value}.
-    """
     metric = request.args.get('metric', 'latency')
     limit = max(1, min(5000, int(request.args.get('limit', 500))))
 
@@ -98,14 +81,11 @@ def timeseries():
                 continue
             if "template" in obj:
                 continue
-            # numeric metric stored in "value"
             if "value" in obj and (obj.get("event") == metric or obj.get("event").lower() == metric.lower()):
                 points.append({"time": obj.get("time"), "value": obj.get("value")})
-    # keep last `limit` points
     if len(points) > limit:
         points = points[-limit:]
     return jsonify(points)
 
 if __name__ == "__main__":
-    # debug allowed for local dev only
     app.run(debug=True, port=8000)
