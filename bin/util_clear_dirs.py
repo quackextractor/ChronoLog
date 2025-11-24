@@ -2,48 +2,44 @@
 import shutil
 
 
-def clear_output_directory():
-    output_dir = "../output"
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+INPUT_DIR = os.path.join(BASE_DIR, "input")
+OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 
-    if not os.path.exists(output_dir):
-        print(f"Output directory '{output_dir}' does not exist.")
+
+def clear_directory(path: str):
+    if not os.path.exists(path):
+        print(f"Directory '{path}' does not exist.")
         return
 
-    # Remove and recreate the directory
-    shutil.rmtree(output_dir)
-    os.makedirs(output_dir)
-    print(f"Successfully cleared '{output_dir}'")
+    try:
+        shutil.rmtree(path)
+        os.makedirs(path)
+        print(f"Successfully cleared '{path}'")
+    except Exception as e:
+        print(f"Failed to clear '{path}': {e}")
 
-def clear_input_directory():
-    input_dir = "../input"
-
-    if not os.path.exists(input_dir):
-        print(f"Input directory '{input_dir}' does not exist.")
-        return
-
-    # Remove and recreate the directory
-    shutil.rmtree(input_dir)
-    os.makedirs(input_dir)
-    print(f"Successfully cleared '{input_dir}'")
 
 def user_prompt():
+    options = {
+        '1': lambda: clear_directory(INPUT_DIR),
+        'input': lambda: clear_directory(INPUT_DIR),
+        '2': lambda: clear_directory(OUTPUT_DIR),
+        'output': lambda: clear_directory(OUTPUT_DIR),
+        '3': lambda: (clear_directory(INPUT_DIR), clear_directory(OUTPUT_DIR)),
+        'both': lambda: (clear_directory(INPUT_DIR), clear_directory(OUTPUT_DIR)),
+        '0': lambda: print("Exiting without making changes.")
+    }
+
     while True:
-        question = input("What do you want to clear? (0:exit/1:input/2:output/3:both):\n").strip().lower()
-        if question == "0":
-            print("Exiting without making changes.")
-            break
-        elif question in ['1', 'input']:
-            clear_input_directory()
-            break
-        elif question in ['2', 'output']:
-            clear_output_directory()
-            break
-        elif question in ['3', 'both']:
-            clear_input_directory()
-            clear_output_directory()
+        choice = input("What do you want to clear? (0:exit/1:input/2:output/3:both):\n").strip().lower()
+        action = options.get(choice)
+        if action:
+            action()
             break
         else:
-            print("Invalid option. Please enter 1, 2, or 3.")
+            print("Invalid option. Please enter 0, 1, 2, or 3.")
+
 
 if __name__ == "__main__":
     user_prompt()

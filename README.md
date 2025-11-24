@@ -44,4 +44,7 @@ python vendor/frontend_demo/serve.py
 ```
 Running on http://127.0.0.1:8000
 
-TODO: ADD INSTRUCTIONS HERE!!!
+## Cleanup
+```commandline
+python bin/util_clear_dirs.py
+```
