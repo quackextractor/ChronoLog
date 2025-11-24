@@ -13,7 +13,11 @@ class LogProcessor:
         self.queue = multiprocessing.Queue(maxsize=QUEUE_MAX_SIZE)
         self.stop_flag = multiprocessing.Event()
 
-    def start(self):
+    def start(self, live=True):
+        """
+        live=True  -> keep tailing the file until interrupted (original behaviour)
+        live=False -> read available data, process, then exit once processing is complete
+        """
         writer_proc = multiprocessing.Process(
             target=WriterProcess().run,
             args=(self.queue, self.stop_flag)
@@ -21,7 +25,7 @@ class LogProcessor:
         writer_proc.start()
 
         pool = multiprocessing.Pool(self.num_processes)
-        reader = FileChunkReader(self.input_file)
+        reader = FileChunkReader(self.input_file, live=live)
         try:
             for chunk in reader:
                 pool.apply_async(
@@ -30,6 +34,14 @@ class LogProcessor:
                     callback=self._on_result,
                     error_callback=self._on_error
                 )
+
+            # If reader finished normally (batch mode), close the pool and wait for workers to finish.
+            if not live:
+                pool.close()
+                pool.join()
+                # All worker callbacks have been invoked or will be. Signal writer to finish after it drains the queue.
+                self.stop_flag.set()
+
         except KeyboardInterrupt:
             print("User requested stop.")
             self._handle_interrupt(pool)
@@ -55,14 +67,31 @@ class LogProcessor:
 
     def _handle_interrupt(self, pool):
         self.stop_flag.set()
-        pool.terminate()
+        try:
+            pool.terminate()
+        except Exception:
+            pass
         pool.join()
 
     def _shutdown(self, pool, writer_proc):
-        pool.close()
-        pool.join()
+        # If pool wasn't closed (live mode or interrupted), attempt graceful close then join.
+        try:
+            pool.close()
+        except Exception:
+            pass
+        try:
+            pool.join()
+        except Exception:
+            pass
+
+        # Ensure writer is signalled to stop (if not already).
         self.stop_flag.set()
+
+        # Wait for writer to finish writing remaining queued items.
         writer_proc.join(timeout=10)
         if writer_proc.is_alive():
-            writer_proc.terminate()
+            try:
+                writer_proc.terminate()
+            except Exception:
+                pass
             writer_proc.join()
