@@ -1,0 +1,102 @@
+@startuml ChronoLog
+
+title ChronoLog System Overview
+
+skinparam monochrome true
+skinparam shadowing false
+
+package "Config" {
+    class Config {
+        ROOT
+        INPUT_DIR
+        OUTPUT_DIR
+        DEFAULT_INPUT_FILE
+        INPUT_FILE_PATH
+        OUTPUT_PATH
+        CHUNK_SIZE
+        QUEUE_MAX_SIZE
+        POLL_INTERVAL
+        NUM_PROCESSES
+        WRITER_FLUSH_INTERVAL
+        QUEUE_PUT_TIMEOUT
+        TRACK_VARIABLES
+        VAR_REGEX
+        KEY_VAL_RE
+    }
+}
+
+package "Reader" {
+    class FileChunkReader {
+        file_path
+        chunk_size
+        poll_interval
+        eof_reached
+        live
+        __iter__()
+        _read_chunk()
+    }
+}
+
+package "Parsing" {
+    class LogParser {
+        var_regex
+        key_val_re
+        parse_lines()
+        extract_timestamp()
+        parse_errors_warnings()
+        parse_variables()
+        _add_event()
+    }
+}
+
+package "Processing" {
+    class LogProcessor {
+        input_file
+        num_processes
+        parser
+        queue
+        stop_flag
+        start()
+        _on_result()
+        _safe_queue_put()
+        _on_error()
+        _handle_interrupt()
+        _shutdown()
+    }
+}
+
+package "Writer" {
+    class WriterProcess {
+        output_dir
+        flush_interval
+        aggregated
+        timeline
+        msg_store
+        msg_id_counter
+        last_flush
+        run()
+        _process_queue()
+        _update_aggregated()
+        _should_flush()
+        flush()
+        _build_dashboard()
+        _compute_metrics()
+    }
+}
+
+package "CLI" {
+    class Main {
+        parse_args()
+    }
+}
+
+Config --> FileChunkReader : provides constants
+Config --> LogParser : provides regex
+LogProcessor --> LogParser : uses
+LogProcessor --> FileChunkReader : uses
+LogProcessor --> WriterProcess : manages writer process
+LogProcessor --> multiprocessing.Queue
+WriterProcess --> Config : output paths
+Main --> LogProcessor : starts
+
+@enduml

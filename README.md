@@ -14,6 +14,15 @@ A lightweight frontend dashboard allows visual exploration of logs and metrics.
 - Aggregated outputs: timeline, summary, and message templates
 - Frontend dashboard for event visualization and metrics plotting
 
+## Docs
+Recommended programs for markdown:
+- Visual Studio Code
+- Jetbrains PyCharm or similar
+- Obsidian
+
+Read the docs at `/docs/ChronoDocs.md`
+pUML diagram: `/docs/diagram.puml`
+
 ## Requirements
 - Python 3.9+ installed and added to system PATH
   - [Official Python download](https://www.python.org/downloads/)
@@ -28,16 +37,6 @@ pip install -r requirements.txt
 ## Configuration
 
 ChronoLog can be customized via environment variables (see `.env.example`):
-## Processing Modes
-
-* `batch` (default): reads current log file and exits
-* `live`: tails the log file and processes new entries continuously
-
-You can switch modes using:
-
-```commandline
-python src/main.py --mode live
-```
 
 ## Running Unit Tests
 
@@ -61,6 +60,17 @@ python bin/generate_sample_log.py
 ```
 
 ### 2. Analyzing using ChronoLog
+
+#### Processing Modes
+
+* `batch` (default): reads current log file and exits
+* `live`: tails the log file and processes new entries continuously
+
+You can switch modes using:
+
+```commandline
+python src/main.py --mode live
+```
 
 ```commandline
 python src/main.py

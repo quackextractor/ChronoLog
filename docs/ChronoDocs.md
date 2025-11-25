@@ -1,18 +1,21 @@
 # ChronoLog Documentation
 
 ## Project Information
-- **Project Name**: ChronoLog
-- **Author**: Miro Slezák
-- **Date**: 24.12.2025
-- **Institution**: Střední průmyslová škola elektrotechnická, Praha 2, Ječná 30
-- **Subject**: Information Technology
+
+* **Project Name**: ChronoLog
+* **Author**: Miro Slezák
+* **Date**: 24.12.2025
+* **Institution**: Střední průmyslová škola elektrotechnická, Praha 2, Ječná 30
+* **Subject**: Information Technology
 
 ## Overview
-ChronoLog is a high-performance parallel log analyzer designed to process large log files efficiently. It supports both live (real-time) and batch processing modes, automatically detecting errors, warnings, and custom metrics while producing structured outputs for visualization.
+
+ChronoLog is a high-performance parallel log analyzer designed to process large log files efficiently. It supports both live (real-time) and batch processing modes, automatically detecting errors, warnings, and custom metrics while producing structured outputs suitable for downstream visualization tools.
 
 ## Business Requirements
 
 ### User Requirements
+
 ```mermaid
 graph TD
     A[User] --> B[Process Large Log Files]
@@ -21,6 +24,7 @@ graph TD
 ```
 
 ### Processing Requirements
+
 ```mermaid
 graph TD
     A[Processing] --> B[Parallel Processing]
@@ -35,17 +39,18 @@ graph TD
 ```
 
 ### Output Requirements
+
 ```mermaid
 graph TD
     A[Output] --> B[Structured Data]
-    A --> C[Visualization]
+    A --> C[Visualization Files]
     A --> D[Metrics]
     
     B --> B1[JSON Format]
     B --> B2[Timeline Events]
     
-    C --> C1[Web Dashboard]
-    C --> C2[Charts]
+    C --> C1[Charts (generated files)]
+    C --> C2[CSV/JSON for external tools]
     
     D --> D1[Error Counts]
     D --> D2[Performance Metrics]
@@ -54,6 +59,7 @@ graph TD
 ## System Architecture
 
 ### High-Level Architecture
+
 ```mermaid
 graph TB
     subgraph "Input Layer"
@@ -72,15 +78,15 @@ graph TB
         G[JSON Files]
     end
     
-    subgraph "Visualization"
-        H[Web Dashboard]
-        I[Charts]
+    subgraph "Visualization Output"
+        I[Charts (files)]
     end
     
-    A --> B --> C --> D --> E --> F --> G --> H --> I
+    A --> B --> C --> D --> E --> F --> G --> I
 ```
 
 ### Core Components
+
 ```mermaid
 graph LR
     A[FileChunkReader] --> B[LogProcessor]
@@ -95,6 +101,7 @@ graph LR
 ```
 
 ### Data Flow Components
+
 ```mermaid
 graph TB
     A[Raw Logs] --> B[FileChunkReader]
@@ -110,6 +117,7 @@ graph TB
 ## Application Flow
 
 ### Main Application Flow
+
 ```mermaid
 sequenceDiagram
     participant U as User
@@ -127,6 +135,7 @@ sequenceDiagram
 ```
 
 ### File Reading Flow
+
 ```mermaid
 sequenceDiagram
     participant P as LogProcessor
@@ -144,6 +153,7 @@ sequenceDiagram
 ```
 
 ### Worker Processing Flow
+
 ```mermaid
 sequenceDiagram
     participant Q as Queue
@@ -161,6 +171,7 @@ sequenceDiagram
 ```
 
 ### Writing Output Flow
+
 ```mermaid
 sequenceDiagram
     participant WP as WriterProcess
@@ -181,6 +192,7 @@ sequenceDiagram
 ```
 
 ### Batch Mode Flow
+
 ```mermaid
 stateDiagram-v2
     [*] --> StartBatch
@@ -194,6 +206,7 @@ stateDiagram-v2
 ```
 
 ### Live Mode Flow
+
 ```mermaid
 stateDiagram-v2
     [*] --> StartLive
@@ -209,34 +222,43 @@ stateDiagram-v2
 ## Interfaces & Dependencies
 
 ### Third-Party Libraries
-```python
+
+```text
 # requirements.txt
-flask==latest    # Web dashboard
+python-dotenv>=0.20.0
+pytest>=7.0
 ```
 
+(Flask / web dashboard is **not** part of the core project. Visualization is produced as files to be consumed by external tools.)
+
 ### External Services
-- None - standalone application
+
+* None - standalone application
 
 ### System Requirements
-- Python 3.9+
-- Operating System: Windows/Linux/macOS
-- Storage: Sufficient space for log files and output
+
+* Python 3.9+
+* Operating System: Windows/Linux/macOS
+* Storage: Sufficient space for log files and output
 
 ## Legal & Licensing
 
 ### License Information
-- **License**: MIT License
-- **Copyright**: 2025 LostSoul
-- **Permissions**: Commercial use, modification, distribution
-- **Conditions**: Include original license
-- **Limitations**: No warranty
+
+* **License**: MIT License
+* **Copyright**: 2025 LostSoul
+* **Permissions**: Commercial use, modification, distribution
+* **Conditions**: Include original license
+* **Limitations**: No warranty
 
 ### Copyright Notice
+
 All original code is MIT licensed. Third-party libraries maintain their respective licenses.
 
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # .env.example
 INPUT_FILE_PATH=    # Path to input log file
@@ -248,55 +270,58 @@ OUTPUT_PATH=        # Output directory path
 ```
 
 ### Configuration Files
-- **.env**: Environment variables (optional)
-- **config.py**: Central configuration management
+
+* **.env**: Environment variables (optional)
+* **config.py**: Central configuration management
 
 ## Installation & Setup
 
 ### Quick Start
+
 ```bash
 # 1. Generate sample log
 python bin/generate_sample_log.py
 
 # 2. Analyze logs (batch mode)
 python src/main.py
-
-# 3. Start web dashboard
-python vendor/frontend_demo/serve.py
 ```
 
 ### Detailed Installation
+
 1. **Prerequisites**: Python 3.9+ in PATH
 2. **Dependencies**: `pip install -r requirements.txt`
 3. **Project Structure**:
+
    ```
    ChronoLog/
    ├── src/          # Core application
    ├── tests/        # Unit tests
    ├── input/        # Log files
    ├── output/       # Analysis results
-   ├── vendor/       # Web dashboard
    └── bin/          # Utilities
    ```
 
 ## Error Handling
 
 ### Common Error States
-| Error Type | Cause | Resolution |
-|------------|-------|------------|
-| FileNotFound | Input file missing | Check INPUT_FILE_PATH |
-| PermissionError | File access denied | Adjust file permissions |
-| MemoryError | Queue overflow | Reduce CHUNK_SIZE or QUEUE_MAX_SIZE |
-| ParserError | Malformed log lines | Check log format |
+
+| Error Type      | Cause               | Resolution                          |
+| --------------- | ------------------- | ----------------------------------- |
+| FileNotFound    | Input file missing  | Check INPUT_FILE_PATH               |
+| PermissionError | File access denied  | Adjust file permissions             |
+| MemoryError     | Queue overflow      | Reduce CHUNK_SIZE or QUEUE_MAX_SIZE |
+| ParserError     | Malformed log lines | Check log format                    |
 
 ### Error Recovery
-- **Automatic**: Queue timeouts and retries
-- **Manual**: Configuration adjustment
-- **Fallback**: Default file paths
+
+* **Automatic**: Queue timeouts and retries
+* **Manual**: Configuration adjustment
+* **Fallback**: Default file paths
 
 ## Testing & Validation
 
 ### Test Structure
+
 ```mermaid
 graph LR
     A[Test Suite] --> B[File Reader Tests]
@@ -313,6 +338,7 @@ graph LR
 ```
 
 ### Running Tests
+
 ```bash
 # Method 1: Using unittest discovery
 set PYTHONPATH=%CD%\src
@@ -323,26 +349,30 @@ python tests/run_all_tests.py
 ```
 
 ### Test Coverage
-- **Unit Tests**: Individual component functionality
-- **Integration Tests**: Component interactions
-- **Performance Tests**: Large file processing
+
+* **Unit Tests**: Individual component functionality
+* **Integration Tests**: Component interactions
+* **Performance Tests**: Large file processing
 
 ## Versioning & Known Issues
 
 ### Version History
-- Current: Initial release
-- Features: Batch/live processing, web dashboard
+
+* Current: Initial release
+* Features: Batch/live processing, file-based visualization outputs
 
 ### Known Limitations
-- Log format assumes specific timestamp pattern
-- Memory usage scales with queue size
-- Web dashboard requires Flask installation
+
+* Log format assumes specific timestamp pattern
+* Memory usage scales with queue size
+* Visualization is produced as files for external tools (no built-in web UI)
 
 ## Data Schema
 
 ### Output Files Structure
 
 #### timeline.jsonl
+
 ```json
 {
   "time": "2025-11-23T12:00:00",
@@ -353,6 +383,7 @@ python tests/run_all_tests.py
 ```
 
 #### messages.json
+
 ```json
 {
   "id": 1,
@@ -361,6 +392,7 @@ python tests/run_all_tests.py
 ```
 
 #### summary.json
+
 ```json
 {
   "summary": {
@@ -378,22 +410,10 @@ python tests/run_all_tests.py
 }
 ```
 
-## Network Configuration
-
-### Web Dashboard
-- **Port**: 8000
-- **Host**: 127.0.0.1 (localhost)
-- **Protocol**: HTTP
-- **Endpoints**:
-  - `/` - Main dashboard
-  - `/summary` - Statistics
-  - `/messages` - Message templates
-  - `/timeline` - Paginated events
-  - `/timeseries` - Metric data
-
 ## Performance Optimization
 
 ### Tuning Parameters
+
 ```python
 # For large files (>1GB)
 CHUNK_SIZE=5000
@@ -406,22 +426,37 @@ QUEUE_MAX_SIZE=10
 ```
 
 ### Best Practices
-- Use SSD storage for large log files
-- Monitor memory usage during processing
-- Adjust workers based on CPU cores
-- Use batch mode for historical analysis
-- Use live mode for real-time monitoring
+
+* Use SSD storage for large log files
+* Monitor memory usage during processing
+* Adjust workers based on CPU cores
+* Use batch mode for historical analysis
+* Use live mode for real-time monitoring
 
 ## Maintenance
 
 ### Cleanup
+
 ```bash
 # Clear input/output directories
 python bin/util_clear_dirs.py
 ```
 
 ### Monitoring
-- Check output file sizes
-- Monitor processing queue
-- Validate JSON output format
-- Review error counts in summary
+
+* Check output file sizes
+* Monitor processing queue
+* Validate JSON output format
+* Review error counts in summary
+
+## Future improvements
+
+* Allow for keeping track of custom variables which change on triggers (defined by patterns) and change depending on set ACTION - DONE
+* Live tail version - DONE
+* Add proper logging using a logging library
+* Test the entire app using better tests, not just the methods. Same input = same output
+* Better runtime stats, maybe a simple analytics efficiency suite to ID bottlenecks
+* Have better cleanup before running, don't use JSONL for variables, so it doesn't append the same IDs again -> allow for rerun
+* Allow for ignoring certain message value tracking via .env
+* Use a database instead of json files
+* Improve configurability: allow for defining custom events
