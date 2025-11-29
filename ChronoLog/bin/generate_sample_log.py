@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 OUTPUT_PATH = Path(__file__).parent.parent / "input" / "sample.log"
-NUM_LINES = 1_000_000  # number of log entries
+NUM_LINES = 50_000  # number of log entries
 
 ERRORS = [
     "Database connection failed",
