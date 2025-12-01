@@ -1,20 +1,20 @@
-﻿import os
-import shutil
+﻿import shutil
+from pathlib import Path
 
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-INPUT_DIR = os.path.join(BASE_DIR, "input")
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+BASE_DIR = Path(__file__).resolve().parent.parent
+INPUT_DIR = BASE_DIR / "input"
+OUTPUT_DIR = BASE_DIR / "output"
 
 
-def clear_directory(path: str):
-    if not os.path.exists(path):
+def clear_directory(path: Path):
+    if not path.exists():
         print(f"Directory '{path}' does not exist.")
         return
 
     try:
         shutil.rmtree(path)
-        os.makedirs(path)
+        path.mkdir(parents=True, exist_ok=True)
         print(f"Successfully cleared '{path}'")
     except Exception as e:
         print(f"Failed to clear '{path}': {e}")
