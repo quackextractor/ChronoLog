@@ -24,18 +24,28 @@ def _kill_port_windows(port):
              print(f"No process found on port {port}.")
              return
 
-        # Parse lines to find the PID
+        # Parse lines to find PIDs
+        pids = set()
         for line in output.splitlines():
             parts = line.split()
             if len(parts) >= 5 and f":{port}" in parts[1]:
-                pid = parts[-1]
-                print(f"Found process {pid} listening on port {port}. Killing it...")
-                try:
-                    subprocess.check_call(f"taskkill /F /PID {pid}", shell=True)
-                    print(f"[OK] Process {pid} terminated.")
-                except subprocess.CalledProcessError:
-                    print(f"[FAILED] Could not kill process {pid}.")
-                return # Only kill one, usually enough
+                pids.add(parts[-1])
+        
+        if not pids:
+            print(f"No process found on port {port}.")
+            return
+
+        for pid in pids:
+            print(f"Found process {pid} listening on port {port}. Killing it...")
+            try:
+                # Suppress stderr to avoid "ERROR: The process ... not found" spam if we handle it
+                subprocess.check_call(f"taskkill /F /PID {pid}", shell=True, stderr=subprocess.DEVNULL)
+                print(f"[OK] Process {pid} terminated.")
+            except subprocess.CalledProcessError:
+                # Check if it was "not found" or proper failure?
+                # Without stderr capture we guess, usually 128 is not found.
+                print(f"[WARNING] Could not kill process {pid}. It might have already exited.")
+                
     except subprocess.CalledProcessError:
         # netstat returns error if no match found
         print(f"No process found on port {port}.")
